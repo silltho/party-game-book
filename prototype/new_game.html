@@ -1,0 +1,184 @@
+<html>
+<head>
+    <title>Siller MMP1 Prototyp</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../assets/img/book.svg">
+    <link rel="stylesheet" href="../assets/css/foundation_complete.css">
+    <link rel="stylesheet" href="../assets/css/foundation-icons.css">
+    <link rel="stylesheet" href="../assets/css/app.css">
+    <script type="text/javascript" src="../assets/js/holder.js"></script>
+    <script type="text/javascript" src="../assets/js/jquery-2.2.3.min.js"></script>
+    <script type="text/javascript" src="../assets/js/jquery-ui.min.js"></script>
+    <!--facebook login-->
+    <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : '694067674068772',
+                xfbml      : true,
+                version    : 'v2.5'
+            });
+        };
+
+        (function(d, s, id){
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        function login() {
+            FB.login(function(response){
+                // Handle the response object, like in statusChangeCallback() in our demo
+                // code.
+                alert(response)
+            }, {scope: 'public_profile,email'});
+        }
+    </script>
+    <script type="text/javascript">
+        var currentTagIndex = 0;
+        var currentMaterialIndex = 0;
+        $(function() {
+            $( "#materialInput" ).autocomplete({
+                source: sourceMaterial,
+                minLength: 2,
+                appendTo: '#autocomplete-material-container',
+                select: handleMaterialSelect
+            });
+
+            $( "#tagInput" ).autocomplete({
+                source: sourceTag,
+                minLength: 2,
+                appendTo: '#autocomplete-tag-container',
+                select: handleTagSelect
+            });
+
+            $('body').on('click', '.removeBlockIcon', function(event) {
+                $(event.target.parentElement).remove();
+            });
+        });
+
+        function sourceTag(request, response){
+            $.getJSON('/api/tags.php?term=' + request.term, function(data){
+                var responseData = [];
+                $.each(data, function(index, item) {
+                    responseData[index] = {'label': item.name, 'value': item.id};
+                });
+                response(responseData);
+            })
+        }
+
+        function createTag(item){
+            var formItem = '<div class="block">' + item.label + '<i class="fi-x-circle removeBlockIcon"></i><input type="hidden" name="tags[' + currentTagIndex + ']" value="' + item.value + '"></div>';
+            currentTagIndex++;
+            return formItem;
+        }
+
+        function handleTagSelect(event, ui) {
+            event.target.parentElement.parentElement.firstElementChild.innerHTML += createTag(ui.item);
+            e.preventDefault();
+        }
+
+        function sourceMaterial(request, response){
+            $.getJSON('/api/materials.php?term=' + request.term, function(data){
+                var responseData = [];
+                $.each(data, function(index, item) {
+                    responseData[index] = {'label': item.name, 'value': item.id};
+                });
+                response(responseData);
+            })
+        }
+
+        function createMaterial(item){
+            var formItem = '<div class="block">' + item.label + '<i class="fi-x-circle removeBlockIcon"></i><input type="hidden" name="materials[' + currentMaterialIndex + ']" value="' + item.value + '"></div>';
+            currentMaterialIndex++;
+            return formItem;
+        }
+
+        function handleMaterialSelect(event, ui) {
+            event.target.parentElement.parentElement.firstElementChild.innerHTML += createMaterial(ui.item);
+            e.preventDefault();
+        }
+    </script>
+</head>
+<body>
+    <div class="row column">
+        <form action="../api/games.php" method="post">
+            <div class="row">
+                <div class="column">
+                    <label>
+                        Name:
+                        <input type="text" name="name">
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-3 column">
+                    <label>
+                        Empfohlenes Alter:
+                        <input type="number" name="recommended_age">
+                    </label>
+                </div>
+                <div class="large-3 column">
+                    <label>
+                        Min. Spieler:
+                        <input type="number" name="min_player_count">
+                    </label>
+                </div>
+                <div class="large-3 column">
+                    <label>
+                        Max. Spieler:
+                        <input type="number" name="max_player_count">
+                    </label>
+                </div>
+                <div class="large-3 column">
+                    <label>
+                        Durchschnittliche Spielzeit:
+                        <input type="number" name="average_playtime">
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-6 column">
+                    <fieldset class="fieldset">
+                        <legend>Materialien</legend>
+                    </fieldset>
+                    <div class="row columns">
+                        <input type="text" id="materialInput" class="input-group-field">
+                        <div id="autocomplete-material-container"></div>
+                    </div>
+                </div>
+                <div class="large-6 column">
+                    <fieldset class="fieldset">
+                        <legend>Tags</legend>
+                    </fieldset>
+                    <div class="row columns">
+                        <input type="text" id="tagInput" class="">
+                        <div id="autocomplete-tag-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column">
+                    <label>
+                        Beschreibung:
+                        <textarea rows="5" name="description"></textarea>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column">
+                    <label>
+                        Basierend auf:
+                        <input type="text" name="base_game_id">
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column">
+                    <button class="button" type="submit">Absenden</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
